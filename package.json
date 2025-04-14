@@ -3,9 +3,6 @@
   "version": "0.0.1",
   "description": "Helper package to my projects",
   "main": "index.js",
-  "directories": {
-    "lib": "lib"
-  },
   "scripts": {
     "test": "exit 0"
   },
