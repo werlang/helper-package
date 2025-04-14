@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "@werlang/helper-packages"
+    "url": "git+https://github.com/werlang/helper-packages.git"
   },
   "author": "Pablo Werlang",
   "license": "MIT",
