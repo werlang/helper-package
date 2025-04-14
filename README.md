@@ -8,11 +8,15 @@ To publish this package to GitHub Packages, follow these steps:
 
 1. Ensure you are authenticated with GitHub Packages:
 
+For that you need to have a personal access token with the `write:packages` scope. You can create one in your GitHub account settings under Developer settings > Personal access tokens.
+
+Create a `.env` file in the root of your project and add the following line:
+
 ```bash
-npm login --registry=https://npm.pkg.github.com
+GITHUB_TOKEN=YOUR_PERSONAL_ACCESS_TOKEN
 ```
 
-For that you need to have a personal access token with the `write:packages` scope. You can create one in your GitHub account settings under Developer settings > Personal access tokens.
+The npm service from `compose.yaml` will use this token to authenticate with GitHub Packages.
 
 2. Update the version in `package.json` if necessary.
 
