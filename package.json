@@ -1,5 +1,5 @@
 {
-  "name": "helper-package",
+  "name": "@werlang/helper-package",
   "version": "1.0.0",
   "description": "Helper package to my projects",
   "main": "index.js",
