@@ -1,0 +1,21 @@
+{
+  "name": "helper-packages",
+  "version": "1.0.0",
+  "description": "Helper packages to my projects",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "@werlang/helper-packages"
+  },
+  "author": "Pablo Werlang",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@werlang"
+  }
+}
