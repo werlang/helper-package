@@ -1,1 +1,5 @@
-export const helloWorld = () => 'Hello, World!!'
+import WSClient from "./driver/websocket.js";
+
+export {
+    WSClient,
+};
