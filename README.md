@@ -4,16 +4,14 @@ This is a helper package for my personal projects, providing classes and functio
 
 ## Publishing the Package
 
-To publish this package to GitHub Packages, follow these steps:
+To publish this package to NPM, follow these steps:
 
-1. Ensure you are authenticated with GitHub Packages:
+1. Ensure you are authenticated
 
-For that you need to have a personal access token with the `write:packages` scope. You can create one in your GitHub account settings under Developer settings > Personal access tokens.
-
-Create a `.env` file in the root of your project and add the following line:
+Create an access token (Classic) with Automation access. Then create a `.env` file in the root of your project and add the following line:
 
 ```bash
-GITHUB_TOKEN=YOUR_PERSONAL_ACCESS_TOKEN
+NPM_TOKEN=YOUR_PERSONAL_ACCESS_TOKEN
 ```
 
 The npm service from `compose.yaml` will use this token to authenticate with GitHub Packages.
@@ -23,7 +21,5 @@ The npm service from `compose.yaml` will use this token to authenticate with Git
 3. Publish the package:
 
 ```bash
-npm publish
+npm run deploy
 ```
-
-4. Verify the package is published by checking the GitHub Packages section of your repository.

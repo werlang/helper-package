@@ -1,20 +1,19 @@
 {
   "name": "@werlang/helper-package",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Helper package to my projects",
   "main": "index.js",
   "scripts": {
-    "test": "exit 0"
+    "test": "exit 0",
+    "deploy": "npm publish --access public"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/werlang/helper-package.git"
   },
+  "homepage": "https://github.com/werlang/helper-package#readme",
   "author": "Pablo Werlang",
   "license": "MIT",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "dependencies": {
     "ws": "^8.18.1"
   }
