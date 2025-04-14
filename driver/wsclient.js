@@ -4,6 +4,7 @@ export default class WSClient {
         this.url = url;
         this.reconnect = reconnect;
         this.isOpen = false;
+        this.onMessageListeners = [];
         
         this.connect();
     }
@@ -25,6 +26,10 @@ export default class WSClient {
             if (this.reconnect) {
                 setTimeout(() => this.connect(), 1000);
             }
+        }
+
+        this.socket.onmessage = (event) => {
+            this.onMessageListeners.forEach(listener => listener(event));
         }
 
         this.isOpen = false;
@@ -62,10 +67,11 @@ export default class WSClient {
         await this.open();
         return new Promise((resolve, reject) => {
             const messageId = this._send(method, data);
-            this.socket.addEventListener('message', (event) => {
+            const listener = this.addListener((event) => {
                 const { data: responseData, id: responseId } = JSON.parse(event.data);
                 if (responseId === messageId) {
                     resolve(responseData);
+                    this.removeListener(listener);
                 }
             });
             this.socket.onerror = (error) => {
@@ -77,10 +83,11 @@ export default class WSClient {
     async stream(method, data, callback) {
         await this.open();
         const messageId = this._send(method, data);
-        this.socket.addEventListener('message', (event) => {
+        const listener = this.addListener((event) => {
             const { data: responseData, id: responseId } = JSON.parse(event.data);
             if (responseId === messageId) {
                 callback(responseData);
+                this.removeListener(listener);
             }
         });
 
@@ -92,4 +99,14 @@ export default class WSClient {
     onConnect(callback) {
         this.onConnectCallback = callback;
     }
+
+    addListener(listener) {
+        this.onMessageListeners.push(listener);
+        return listener;
+    }
+
+    removeListener(listener) {
+        this.onMessageListeners = this.onMessageListeners.filter(l => l !== listener);
+    }
+
 }
