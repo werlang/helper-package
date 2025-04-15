@@ -67,11 +67,10 @@ export default class WSClient {
         await this.open();
         return new Promise((resolve, reject) => {
             const messageId = this._send(method, data);
-            const listener = this.addListener((event) => {
+            this.addListener((event) => {
                 const { data: responseData, id: responseId } = JSON.parse(event.data);
                 if (responseId === messageId) {
                     resolve(responseData);
-                    this.removeListener(listener);
                 }
             });
             this.socket.onerror = (error) => {
@@ -83,11 +82,10 @@ export default class WSClient {
     async stream(method, data, callback) {
         await this.open();
         const messageId = this._send(method, data);
-        const listener = this.addListener((event) => {
+        this.addListener((event) => {
             const { data: responseData, id: responseId } = JSON.parse(event.data);
             if (responseId === messageId) {
                 callback(responseData);
-                this.removeListener(listener);
             }
         });
 
@@ -103,10 +101,6 @@ export default class WSClient {
     addListener(listener) {
         this.onMessageListeners.push(listener);
         return listener;
-    }
-
-    removeListener(listener) {
-        this.onMessageListeners = this.onMessageListeners.filter(l => l !== listener);
     }
 
 }
