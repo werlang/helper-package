@@ -20,7 +20,8 @@ export default class WSClient {
         this.reconnect = reconnect;
         this.isOpen = false;
         this.onMessageListeners = [];
-        
+        this._isConnecting = false; // Prevent multiple simultaneous connections
+        this._shouldReconnect = true; // Track if reconnect is desired
         this.connect();
     }
 
@@ -30,30 +31,51 @@ export default class WSClient {
      * @returns {Promise<void>}
      */
     async connect() {
+        if (this._isConnecting) return;
+        this._isConnecting = true;
+        this._shouldReconnect = this.reconnect;
+        if (this.socket) {
+            this.socket.onclose = null;
+            this.socket.onerror = null;
+            this.socket.onmessage = null;
+            this.socket.onopen = null;
+        }
         this.socket = new WebSocket(this.url);
+
+        // Single error handler
+        const handleError = (error) => {
+            console.error('WebSocket error:', error);
+            this.isOpen = false;
+            if (this._shouldReconnect) {
+                setTimeout(() => this.connect(), 1000);
+            }
+        };
 
         this.socket.onclose = () => {
             this.isOpen = false;
             console.log('WebSocket connection closed');
-
-            if (this.reconnect) {
+            if (this._shouldReconnect) {
                 setTimeout(() => this.connect(), 1000);
             }
-        }
-        this.socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-
-            if (this.reconnect) {
-                setTimeout(() => this.connect(), 1000);
-            }
-        }
+        };
+        this.socket.onerror = handleError;
 
         this.socket.onmessage = (event) => {
-            this.onMessageListeners.forEach(listener => listener(event));
-        }
+            this.onMessageListeners.forEach(listener => {
+                try {
+                    listener(event);
+                } catch (e) {
+                    console.error('Listener error:', e);
+                }
+            });
+        };
 
         this.isOpen = false;
-        await this.open();
+        try {
+            await this.open();
+        } finally {
+            this._isConnecting = false;
+        }
     }
 
     /**
@@ -62,16 +84,25 @@ export default class WSClient {
      * @returns {Promise<void>} Resolves when the connection is open.
      */
     async open() {
-        return this.isOpen ? Promise.resolve() : await new Promise((resolve, reject) => {
-            this.socket.onopen = () => {
+        if (this.isOpen) return;
+        return await new Promise((resolve, reject) => {
+            const onOpen = () => {
                 console.log('WebSocket connection established');
                 this.isOpen = true;
-
                 if (this.onConnectCallback) {
                     this.onConnectCallback();
                 }
+                this.socket.removeEventListener('open', onOpen);
+                this.socket.removeEventListener('error', onError);
                 resolve();
             };
+            const onError = (err) => {
+                this.socket.removeEventListener('open', onOpen);
+                this.socket.removeEventListener('error', onError);
+                reject(err);
+            };
+            this.socket.addEventListener('open', onOpen);
+            this.socket.addEventListener('error', onError);
         });
     }
 
@@ -89,9 +120,6 @@ export default class WSClient {
             method,
             payload: data,
         }));
-        this.socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
         return messageId;
     }
 
@@ -107,15 +135,23 @@ export default class WSClient {
         return new Promise((resolve, reject) => {
             const messageId = this._send(method, data);
             const listener = this.addListener((event) => {
-                const { data: responseData, id: responseId } = JSON.parse(event.data);
+                let parsed;
+                try {
+                    parsed = JSON.parse(event.data);
+                } catch (e) {
+                    return;
+                }
+                const { data: responseData, id: responseId } = parsed;
                 if (responseId === messageId) {
                     resolve(responseData);
                     this.removeListener(listener);
                 }
             });
-            this.socket.onerror = (error) => {
+            const errorHandler = (error) => {
                 reject(error);
+                this.removeListener(listener);
             };
+            this.socket.addEventListener('error', errorHandler);
         });
     }
 
@@ -131,16 +167,17 @@ export default class WSClient {
         await this.open();
         const messageId = this._send(method, data);
         const listener = this.addListener((event) => {
-            const { data: responseData, id: responseId } = JSON.parse(event.data);
+            let parsed;
+            try {
+                parsed = JSON.parse(event.data);
+            } catch (e) {
+                return;
+            }
+            const { data: responseData, id: responseId } = parsed;
             if (responseId === messageId) {
                 callback(responseData);
             }
         });
-
-        this.socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
-
         // Return a function to stop listening to the stream
         return () => this.removeListener(listener);
     }
@@ -169,6 +206,16 @@ export default class WSClient {
      */
     removeListener(listener) {
         this.onMessageListeners = this.onMessageListeners.filter(l => l !== listener);
+    }
+
+    /**
+     * Closes the WebSocket connection and prevents further reconnects.
+     */
+    close() {
+        this._shouldReconnect = false;
+        if (this.socket) {
+            this.socket.close();
+        }
     }
 
 }

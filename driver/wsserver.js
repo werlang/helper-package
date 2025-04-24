@@ -28,15 +28,28 @@ export default class WSServer {
      * @param {string} message - The received message as a string.
      */
     handleMessage(ws, message) {
-
-        const { method, payload, id } = JSON.parse(message);
-        
+        let parsed;
+        try {
+            parsed = JSON.parse(message);
+        } catch (e) {
+            ws.send(JSON.stringify({ error: true, message: 'Malformed JSON', id: undefined }));
+            return;
+        }
+        const { method, payload, id } = parsed;
+        if (!method || typeof method !== 'string') {
+            ws.send(JSON.stringify({ error: true, message: 'Missing or invalid method', id }));
+            return;
+        }
         if (this.methodList[method]) {
-            this.methodList[method](payload, (data) => {
-                ws.send(JSON.stringify({ id, data }));
-            });
+            try {
+                this.methodList[method](payload, (data) => {
+                    ws.send(JSON.stringify({ id, data }));
+                });
+            } catch (err) {
+                ws.send(JSON.stringify({ error: true, message: 'Method handler error', id }));
+            }
         } else {
-            ws.send(JSON.stringify({ error: true, message: 'Method not found' }));
+            ws.send(JSON.stringify({ error: true, message: 'Method not found', id }));
         }
     }
 
