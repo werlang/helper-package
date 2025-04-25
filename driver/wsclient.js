@@ -53,7 +53,7 @@ export default class WSClient {
 
         this.socket.onclose = () => {
             this.isOpen = false;
-            console.log('WebSocket connection closed');
+            // console.log('WebSocket connection closed');
             if (this._shouldReconnect) {
                 setTimeout(() => this.connect(), 1000);
             }
@@ -87,7 +87,7 @@ export default class WSClient {
         if (this.isOpen) return;
         return await new Promise((resolve, reject) => {
             const onOpen = () => {
-                console.log('WebSocket connection established');
+                // console.log('WebSocket connection established');
                 this.isOpen = true;
                 if (this.onConnectCallback) {
                     this.onConnectCallback();
