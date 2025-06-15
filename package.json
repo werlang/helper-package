@@ -1,6 +1,6 @@
 {
   "name": "@werlang/helper-package",
-  "version": "0.1.4",
+  "version": "0.2.1",
   "description": "Helper package to my projects",
   "main": "index.js",
   "type": "module",
