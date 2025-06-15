@@ -7,7 +7,7 @@ services:
         working_dir: /app
         env_file:
             - .env
-        command: npm run deploy
-        # command: tail -f /dev/null #idle container
+        # command: npm run deploy
+        command: tail -f /dev/null #idle container
 volumes:
     node_modules:
